@@ -1,6 +1,6 @@
 schema_version: 1
 
-name: "artemiscloud/activemq-artemis-broker"
+name: "arkmq-org/activemq-artemis-broker"
 description: "ActiveMQ Artemis broker container image"
 version: "1.0.32"
 from: "registry.access.redhat.com/ubi9/openjdk-17@sha256:dca1dec9331efd56320b658b931e53b234e19b545b8c130ea40155c72fea8ab4"
