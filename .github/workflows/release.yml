@@ -34,8 +34,8 @@ jobs:
           RELEASE_TAG="$(grep -Po -m 1 '(?<=^version: ")[^"]+' image.yaml)"
           RELEASE_TAG_COMMIT="$(git rev-list -n 1 ${RELEASE_TAG} || true)"
           if [ "$RELEASE_TAG_COMMIT" != "$HEAD_COMMIT" ]; then
-            git config user.name 'artemiscloud-bot'
-            git config user.email 'bot@artemiscloud.io'
+            git config user.name 'arkmq-bot'
+            git config user.email 'bot@arkmq-org.io'
             git tag -a ${RELEASE_TAG} -m ${RELEASE_TAG} --force
             git push origin $RELEASE_TAG --force
           fi
