@@ -56,8 +56,8 @@ jobs:
 
       - name: Set up the repo
         run: |
-          git config user.name 'artemiscloud-bot'
-          git config user.email 'bot@artemiscloud.io'
+          git config user.name 'arkmq-bot'
+          git config user.email 'bot@arkmq-org.io'
           git push
 
       - name: Update version
