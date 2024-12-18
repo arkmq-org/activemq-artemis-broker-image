@@ -58,6 +58,12 @@ jobs:
           cekit --verbose build --dry-run --overrides "{'labels': [{'name': 'quay.expires-after', 'value': '90d'}, {'name': 'git-sha', 'value': '$GITHUB_SHA'}]}" podman
           podman build --platform linux/amd64 --platform linux/arm64 --manifest $IMAGE_NAME:dev.latest ./target/image
 
+      - name: Set up java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
       - name: Check the image
         run: |
           CONTAINER_ID=$(podman run --detach --network=host --env AMQ_USER=admin --env AMQ_PASSWORD=admin $IMAGE_NAME:dev.latest)
