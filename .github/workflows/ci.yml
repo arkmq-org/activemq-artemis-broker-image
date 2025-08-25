@@ -59,7 +59,7 @@ jobs:
           podman build --platform linux/amd64 --platform linux/arm64 --manifest $IMAGE_NAME:dev.latest ./target/image
 
       - name: Set up java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '17'
