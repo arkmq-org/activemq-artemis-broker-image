@@ -1,13 +1,13 @@
 schema_version: 1
 
-name: activemq.artemis.install
+name: apache.artemis.install
 
 version: 1.4
 artifacts:
     - name: apache-artemis-bin
       target: apache-artemis-bin.zip
       url: https://archive.apache.org/dist/artemis/artemis/2.51.0/apache-artemis-2.51.0-bin.zip
-      description: "Apache ActiveMQ Artemis messaging broker"
+      description: "Apache Artemis messaging broker"
       md5: 3b0da2ffb990423ff611fdfb25481b70
 execute:
     - script: install.sh

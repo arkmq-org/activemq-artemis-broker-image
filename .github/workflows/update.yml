@@ -1,7 +1,7 @@
 name: Update
 
 env:
-  IMAGE_NAME: activemq-artemis-broker
+  IMAGE_NAME: arkmq-org-broker
 
 on:
   workflow_dispatch:
@@ -99,12 +99,12 @@ jobs:
             APACHE_ARTEMIS_BIN_URL="https://www.apache.org/dyn/closer.cgi?filename=artemis/artemis/${APACHE_ARTEMIS_VERSION}/apache-artemis-${APACHE_ARTEMIS_VERSION}-bin.zip&action=download"
           fi
           wget -O apache-artemis-bin.zip ${APACHE_ARTEMIS_BIN_URL}
-          sed -i "/APACHE_ARTEMIS_VERSION/{n;s/value:.*/value: \"${APACHE_ARTEMIS_VERSION}\"/}" modules/activemq-artemis-install/module.yaml
+          sed -i "/APACHE_ARTEMIS_VERSION/{n;s/value:.*/value: \"${APACHE_ARTEMIS_VERSION}\"/}" modules/apache-artemis-install/module.yaml
           APACHE_ARTEMIS_BIN_MD5=($(md5sum apache-artemis-bin.zip))
-          PREV_APACHE_ARTEMIS_BIN_URL=$(sed -n '/name: apache-artemis-bin/,$p' modules/activemq-artemis-install/module.yaml | grep -Pom 1 'url:.*')
-          PREV_APACHE_ARTEMIS_BIN_MD5=$(sed -n '/name: apache-artemis-bin/,$p' modules/activemq-artemis-install/module.yaml | grep -Pom 1 'md5:.*')
-          sed -i -e "s~${PREV_APACHE_ARTEMIS_BIN_URL}~url: ${APACHE_ARTEMIS_BIN_URL}~" -e "s~${PREV_APACHE_ARTEMIS_BIN_MD5}~md5: ${APACHE_ARTEMIS_BIN_MD5}~" modules/activemq-artemis-install/module.yaml
-          git commit --all --message "Update ActiveMQ Artemis to ${APACHE_ARTEMIS_VERSION}" || echo "nothing to commit"
+          PREV_APACHE_ARTEMIS_BIN_URL=$(sed -n '/name: apache-artemis-bin/,$p' modules/apache-artemis-install/module.yaml | grep -Pom 1 'url:.*')
+          PREV_APACHE_ARTEMIS_BIN_MD5=$(sed -n '/name: apache-artemis-bin/,$p' modules/apache-artemis-install/module.yaml | grep -Pom 1 'md5:.*')
+          sed -i -e "s~${PREV_APACHE_ARTEMIS_BIN_URL}~url: ${APACHE_ARTEMIS_BIN_URL}~" -e "s~${PREV_APACHE_ARTEMIS_BIN_MD5}~md5: ${APACHE_ARTEMIS_BIN_MD5}~" modules/apache-artemis-install/module.yaml
+          git commit --all --message "Update Apache Artemis to ${APACHE_ARTEMIS_VERSION}" || echo "nothing to commit"
 
       - name: Push commits
         run: |

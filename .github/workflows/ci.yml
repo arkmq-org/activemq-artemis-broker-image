@@ -1,7 +1,7 @@
 name: CI
 
 env:
-  IMAGE_NAME: activemq-artemis-broker
+  IMAGE_NAME: arkmq-org-broker
 
 on:
   push:
@@ -44,11 +44,11 @@ jobs:
           APACHE_ARTEMIS_SNAPSHOT_VERSION=$(curl https://repository.apache.org/content/repositories/snapshots/org/apache/artemis/apache-artemis/${APACHE_ARTEMIS_VERSION}/maven-metadata.xml | grep -m 1 -oP '(?<=value>)[^<]+')
           APACHE_ARTEMIS_BIN_URL="https://repository.apache.org/content/repositories/snapshots/org/apache/artemis/apache-artemis/${APACHE_ARTEMIS_VERSION}/apache-artemis-${APACHE_ARTEMIS_SNAPSHOT_VERSION}-bin.zip"
           wget -O apache-artemis-bin.zip ${APACHE_ARTEMIS_BIN_URL}
-          sed -i "/APACHE_ARTEMIS_VERSION/{n;s/value:.*/value: \"${APACHE_ARTEMIS_VERSION}\"/}" modules/activemq-artemis-install/module.yaml
+          sed -i "/APACHE_ARTEMIS_VERSION/{n;s/value:.*/value: \"${APACHE_ARTEMIS_VERSION}\"/}" modules/apache-artemis-install/module.yaml
           APACHE_ARTEMIS_BIN_MD5=($(md5sum apache-artemis-bin.zip))
-          PREV_APACHE_ARTEMIS_BIN_URL=$(sed -n '/name: apache-artemis-bin/,$p' modules/activemq-artemis-install/module.yaml | grep -Pom 1 'url:.*')
-          PREV_APACHE_ARTEMIS_BIN_MD5=$(sed -n '/name: apache-artemis-bin/,$p' modules/activemq-artemis-install/module.yaml | grep -Pom 1 'md5:.*')
-          sed -i -e "s~${PREV_APACHE_ARTEMIS_BIN_URL}~url: ${APACHE_ARTEMIS_BIN_URL}~" -e "s~${PREV_APACHE_ARTEMIS_BIN_MD5}~md5: ${APACHE_ARTEMIS_BIN_MD5}~" modules/activemq-artemis-install/module.yaml
+          PREV_APACHE_ARTEMIS_BIN_URL=$(sed -n '/name: apache-artemis-bin/,$p' modules/apache-artemis-install/module.yaml | grep -Pom 1 'url:.*')
+          PREV_APACHE_ARTEMIS_BIN_MD5=$(sed -n '/name: apache-artemis-bin/,$p' modules/apache-artemis-install/module.yaml | grep -Pom 1 'md5:.*')
+          sed -i -e "s~${PREV_APACHE_ARTEMIS_BIN_URL}~url: ${APACHE_ARTEMIS_BIN_URL}~" -e "s~${PREV_APACHE_ARTEMIS_BIN_MD5}~md5: ${APACHE_ARTEMIS_BIN_MD5}~" modules/apache-artemis-install/module.yaml
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -96,7 +96,7 @@ jobs:
           script: |
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
-              repo: 'activemq-artemis-broker-kubernetes-image',
+              repo: 'arkmq-org-broker-kubernetes-image',
               workflow_id: 'ci.yml',
               ref: 'main',
               inputs: {

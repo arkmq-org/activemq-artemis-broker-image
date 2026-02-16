@@ -1,13 +1,13 @@
 schema_version: 1
 
-name: "arkmq-org/activemq-artemis-broker"
-description: "ActiveMQ Artemis broker container image"
+name: "arkmq-org/arkmq-org-broker"
+description: "Apache Artemis broker container image"
 version: "2.0.10"
 from: "registry.access.redhat.com/ubi9/openjdk-17@sha256:615a2e789a3b2d982ec9e126d525697032440b1eace5dfea4fe6618cc85a7935"
 
 labels:
   - name: "io.k8s.display-name"
-    value: "ActiveMQ Artemis Broker"
+    value: "Apache Artemis Broker"
   - name: "maintainer"
     value: "ArkMQ <info@arkmq.org>"
 
@@ -51,8 +51,8 @@ modules:
 
   install:
     - name: jboss.container.user.legacy
-    - name: activemq.artemis.install
-    - name: activemq.artemis.chown
+    - name: apache.artemis.install
+    - name: apache.artemis.chown
 run:
   user: 185
   cmd:

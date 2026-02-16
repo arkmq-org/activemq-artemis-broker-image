@@ -1,6 +1,6 @@
 schema_version: 1
 
-name: activemq.artemis.chown
+name: apache.artemis.chown
 version: 1
 execute:
     - script: install.sh

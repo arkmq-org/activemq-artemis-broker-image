@@ -1,7 +1,7 @@
 name: Release
 
 env:
-  IMAGE_NAME: activemq-artemis-broker
+  IMAGE_NAME: arkmq-org-broker
 
 on:
   workflow_dispatch:
@@ -71,7 +71,7 @@ jobs:
           script: |
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
-              repo: 'activemq-artemis-broker-kubernetes-image',
+              repo: 'arkmq-org-broker-kubernetes-image',
               workflow_id: 'update.yml',
               ref: 'main',
               inputs: {
