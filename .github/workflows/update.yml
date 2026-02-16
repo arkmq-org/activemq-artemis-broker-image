@@ -4,6 +4,8 @@ env:
   IMAGE_NAME: arkmq-org-broker
 
 on:
+  schedule:
+    - cron:  '0 0 * * *'
   workflow_dispatch:
     inputs:
       version:
@@ -62,21 +64,9 @@ jobs:
           git config user.email 'bot@arkmq-org.io'
           git push
 
-      - name: Update version
-        if: ${{ inputs.update_version }}
-        run: |
-          CURRENT_VERSION=$(grep -m 1 -oP '(?<=^version: ")[^"]+' image.yaml)
-          IFS=. read CURRENT_VERSION_MAJOR CURRENT_VERSION_MINOR CURRENT_VERSION_PATCH <<< ${CURRENT_VERSION}
-          IFS=. read VERSION_MAJOR VERSION_MINOR VERSION_PATCH <<< ${{ inputs.version }}
-          VERSION_MAJOR=${VERSION_MAJOR/\*/${CURRENT_VERSION_MAJOR}} && VERSION_MAJOR=${VERSION_MAJOR/+/$((CURRENT_VERSION_MAJOR+1))}
-          VERSION_MINOR=${VERSION_MINOR/\*/${CURRENT_VERSION_MINOR}} && VERSION_MINOR=${VERSION_MINOR/+/$((CURRENT_VERSION_MINOR+1))}
-          VERSION_PATCH=${VERSION_PATCH/\*/${CURRENT_VERSION_PATCH}} && VERSION_PATCH=${VERSION_PATCH/+/$((CURRENT_VERSION_PATCH+1))}
-          VERSION="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
-          sed -i "s~^version:.*~version: \"${VERSION}\"~g" image.yaml
-          git commit --all --message "Update version to ${VERSION}" || echo "nothing to commit"
-
       - name: Update base image
-        if: ${{ inputs.update_base_image }}
+        id: update_base_image
+        if: ${{ github.event_name == 'schedule' || inputs.update_base_image }}
         run: |
           if [ "${{ inputs.base_image }}" = "latest" ]; then
             BASE_IMAGE="registry.access.redhat.com/ubi9/openjdk-17@$(skopeo inspect docker://registry.access.redhat.com/ubi9/openjdk-17:latest | jq -r '.Digest')"
@@ -84,12 +74,13 @@ jobs:
             BASE_IMAGE="${{ inputs.base_image }}"
           fi
           sed -i "s~from.*~from: \"${BASE_IMAGE}\"~g" image.yaml
-          git commit --all --message "Update base image to ${BASE_IMAGE}" || echo "nothing to commit"
+          git commit --all --message "Update base image to ${BASE_IMAGE}" && echo "status=DONE" >> $GITHUB_OUTPUT || echo "nothing to commit"
 
       - name: Update Apache Artemis
-        if: ${{ inputs.update_apache_artemis_version }}
+        id: update_apache_artemis_version
+        if: ${{ github.event_name == 'schedule' || inputs.update_apache_artemis_version }}
         run: |
-          if [ "${{ inputs.apache_artemis_version }}" = "latest" ]; then
+          if [ "${{ github.event_name }}" = "push" ] || [ "${{ inputs.apache_artemis_version }}" = "latest" ]; then
             APACHE_ARTEMIS_VERSION="$(curl https://artemis.apache.org/components/artemis/documentation/latest/index.html | grep -oP '(?<=Apache Artemis )[0-9]+.[0-9]+.[0-9]+')"
           else
             APACHE_ARTEMIS_VERSION="${{ inputs.apache_artemis_version }}"
@@ -104,25 +95,43 @@ jobs:
           PREV_APACHE_ARTEMIS_BIN_URL=$(sed -n '/name: apache-artemis-bin/,$p' modules/apache-artemis-install/module.yaml | grep -Pom 1 'url:.*')
           PREV_APACHE_ARTEMIS_BIN_MD5=$(sed -n '/name: apache-artemis-bin/,$p' modules/apache-artemis-install/module.yaml | grep -Pom 1 'md5:.*')
           sed -i -e "s~${PREV_APACHE_ARTEMIS_BIN_URL}~url: ${APACHE_ARTEMIS_BIN_URL}~" -e "s~${PREV_APACHE_ARTEMIS_BIN_MD5}~md5: ${APACHE_ARTEMIS_BIN_MD5}~" modules/apache-artemis-install/module.yaml
-          git commit --all --message "Update Apache Artemis to ${APACHE_ARTEMIS_VERSION}" || echo "nothing to commit"
+          git commit --all --message "Update ActiveMQ Artemis to ${APACHE_ARTEMIS_VERSION}" && echo "status=DONE" >> $GITHUB_OUTPUT || echo "nothing to commit"
+
+      - name: Update version
+        id: update_version
+        if: ${{ (github.event_name == 'schedule' && steps.update_apache_artemis_version.outputs.status == 'DONE') || inputs.update_version }}
+        env:
+          UPDATE_VERSION: ${{ github.event_name == 'schedule' && '*.*.+' || inputs.version }}
+        run: |
+          CURRENT_VERSION=$(grep -m 1 -oP '(?<=^version: ")[^"]+' image.yaml)
+          IFS=. read CURRENT_VERSION_MAJOR CURRENT_VERSION_MINOR CURRENT_VERSION_PATCH <<< ${CURRENT_VERSION}
+          IFS=. read VERSION_MAJOR VERSION_MINOR VERSION_PATCH <<< "${UPDATE_VERSION}"
+          VERSION_MAJOR=${VERSION_MAJOR/\*/${CURRENT_VERSION_MAJOR}} && VERSION_MAJOR=${VERSION_MAJOR/+/$((CURRENT_VERSION_MAJOR+1))}
+          VERSION_MINOR=${VERSION_MINOR/\*/${CURRENT_VERSION_MINOR}} && VERSION_MINOR=${VERSION_MINOR/+/$((CURRENT_VERSION_MINOR+1))}
+          VERSION_PATCH=${VERSION_PATCH/\*/${CURRENT_VERSION_PATCH}} && VERSION_PATCH=${VERSION_PATCH/+/$((CURRENT_VERSION_PATCH+1))}
+          VERSION="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
+          sed -i "s~^version:.*~version: \"${VERSION}\"~g" image.yaml
+          git commit --all --message "Update version to ${VERSION}" && echo "status=DONE" >> $GITHUB_OUTPUT || echo "nothing to commit"
 
       - name: Push commits
+        if: ${{ steps.update_version.outputs.status == 'DONE' || steps.update_base_image.outputs.status == 'DONE' || steps.update_apache_artemis_version.outputs.status == 'DONE' }}
         run: |
           git push
 
       - name: Trigger release
-        if: ${{ inputs.trigger_release != 'none' }}
+        if: ${{ (github.event_name == 'schedule' && steps.update_apache_artemis_version.outputs.status == 'DONE') || inputs.trigger_release != 'none' }}
+        env:
+          TRIGGER_CHILDREN: ${{ (github.event_name == 'schedule' && steps.update_apache_artemis_version.outputs.status == 'DONE') || inputs.trigger_release == 'all' }}
         uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.BOT_TOKEN }}
           script: |
-            const trigger_children = (context.payload.inputs.trigger_release === 'all' ? 'true' : 'false')
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'release.yml',
               ref: context.ref,
               inputs: {
-                trigger_children: trigger_children
+                trigger_children: process.env.TRIGGER_CHILDREN
               }
             });
