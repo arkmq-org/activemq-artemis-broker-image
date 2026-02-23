@@ -1,4 +1,4 @@
-# Apache Artemis broker container image
+# ArkMQ Broker container image
 
 ## License
 
@@ -15,11 +15,11 @@ cekit build podman
 
 ## Repository
 
-The Apache Artemis broker container images are pushed to https://quay.io/repository/arkmq-org/arkmq-org-broker
+The ArkMQ Broker container images are pushed to https://quay.io/repository/arkmq-org/arkmq-org-broker
 
 ## Tags
 
-The Apache Artemis broker container images have release tags and special tags.
+The ArkMQ Broker container images have release tags and special tags.
 
 The image release tags point to images built from the sources of the releated release tags,
 i.e. the `1.0.0` image release tag points to the image built from
