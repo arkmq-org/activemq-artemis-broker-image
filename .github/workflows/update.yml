@@ -95,7 +95,7 @@ jobs:
           PREV_APACHE_ARTEMIS_BIN_URL=$(sed -n '/name: apache-artemis-bin/,$p' modules/apache-artemis-install/module.yaml | grep -Pom 1 'url:.*')
           PREV_APACHE_ARTEMIS_BIN_MD5=$(sed -n '/name: apache-artemis-bin/,$p' modules/apache-artemis-install/module.yaml | grep -Pom 1 'md5:.*')
           sed -i -e "s~${PREV_APACHE_ARTEMIS_BIN_URL}~url: ${APACHE_ARTEMIS_BIN_URL}~" -e "s~${PREV_APACHE_ARTEMIS_BIN_MD5}~md5: ${APACHE_ARTEMIS_BIN_MD5}~" modules/apache-artemis-install/module.yaml
-          git commit --all --message "Update ActiveMQ Artemis to ${APACHE_ARTEMIS_VERSION}" && echo "status=DONE" >> $GITHUB_OUTPUT || echo "nothing to commit"
+          git commit --all --message "Update Apache Artemis to ${APACHE_ARTEMIS_VERSION}" && echo "status=DONE" >> $GITHUB_OUTPUT || echo "nothing to commit"
 
       - name: Update version
         id: update_version
